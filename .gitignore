@@ -1,0 +1,8 @@
+.build/
+*.xcuserstate
+DerivedData/
+*.dSYM/
+*.zip
+*.sha256
+.DS_Store
+dist/
