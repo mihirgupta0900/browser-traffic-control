@@ -34,6 +34,8 @@ The repository includes reproducible packaging, but signed releases require main
 4. Refresh Dia profiles and choose a default destination.
 5. Add ordered rules. The first matching rule wins.
 
+Keep one installed copy of the app, preferably `/Applications/Browser Traffic Control.app`. macOS LaunchServices can retain stale registrations for copies launched from a build or `dist` folder. If another app opens a link unexpectedly, quit or remove duplicate local copies, launch the `/Applications` copy, then use **Check Again** and confirm both HTTP and HTTPS show as configured.
+
 The app checks both HTTP and HTTPS and distinguishes fully configured, partial, unavailable, and not-configured states. Missing saved profiles remain visible as unavailable instead of being silently replaced.
 
 ## Examples
@@ -45,6 +47,13 @@ https://mail.google.com/** → Dia / Personal
 ```
 
 Use **Preview match** to inspect a rule decision without opening a tab.
+
+## Troubleshooting
+
+- **Profiles not loaded:** Click **Refresh**. Dia must be running with at least one window, and macOS Automation permission must allow Browser Traffic Control to control Dia.
+- **A link did not route:** Check the default-browser status, confirm the profile still exists, and use **Preview match** to inspect the selected destination.
+- **A CLI says it opened the default browser but Safari appears:** Verify that Browser Traffic Control is installed in `/Applications` and that there is not an older source/build copy registered under the same bundle ID. Re-open the installed copy, click **Check Again**, and test with a harmless link. Some tools may explicitly select Safari or another browser instead of using macOS LaunchServices; Browser Traffic Control cannot intercept those explicit launches.
+- **macOS blocks the app:** Unsigned local builds may require opening the app from Finder and approving the macOS warning. Public releases should be signed and notarized by the maintainer before broad distribution.
 
 ## Privacy and security
 
