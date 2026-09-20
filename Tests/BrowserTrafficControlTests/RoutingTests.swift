@@ -5,7 +5,7 @@ struct RoutingTests {
     let router = URLRouter()
 
     func orderedRulesAreFirstMatchWins() {
-        let settings = Settings(defaultProfile: "Personal", rules: [
+        let settings = Settings(rules: [
             Rule(pattern: "https://github.com/company/**", profile: "Work"),
             Rule(pattern: "https://github.com/**", profile: "GitHub")
         ])
@@ -19,9 +19,9 @@ struct RoutingTests {
         precondition(!router.wildcard("https://example.com/**", "https://other.example.com/a"))
     }
 
-    func defaultProfileFallback() {
-        let settings = Settings(defaultProfile: "Personal", rules: [Rule(pattern: "https://work.example/**", profile: "Work")])
-        precondition(router.profile(for: URL(string: "https://news.example.org")!, settings: settings) == "Personal")
+    func unmatchedUsesCurrentProfileFallback() {
+        let settings = Settings(rules: [Rule(pattern: "https://work.example/**", profile: "Work")])
+        precondition(router.profile(for: URL(string: "https://news.example.org")!, settings: settings) == nil)
     }
 
     func httpAndHttpsValidation() {
@@ -33,10 +33,13 @@ struct RoutingTests {
     }
 
     func settingsEncodeDecodeRoundTrip() throws {
-        let original = Settings(defaultProfile: "Personal", rules: [Rule(pattern: "https://github.com/company/**", profile: "Work")])
+        let original = Settings(rules: [Rule(pattern: "https://github.com/company/**", profile: "Work")])
         let data = try JSONEncoder().encode(original)
         let decoded = try JSONDecoder().decode(Settings.self, from: data)
         precondition(decoded == original)
+        let legacy = Data(#"{"defaultProfile":"Personal","rules":[{"pattern":"https://work.example/**","profile":"Work"}]}"#.utf8)
+        let migrated = try JSONDecoder().decode(Settings.self, from: legacy)
+        precondition(router.profile(for: URL(string: "https://news.example.org")!, settings: migrated) == nil)
     }
 }
 
@@ -47,7 +50,7 @@ let _browserTrafficControlValidation: Void = {
     let t = RoutingTests()
     t.orderedRulesAreFirstMatchWins()
     t.wildcardHostAndPathMatching()
-    t.defaultProfileFallback()
+    t.unmatchedUsesCurrentProfileFallback()
     t.httpAndHttpsValidation()
     try! t.settingsEncodeDecodeRoundTrip()
     print("BrowserTrafficControlTests: 5 tests passed")

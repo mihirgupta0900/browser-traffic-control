@@ -13,7 +13,7 @@ for count in counts {
         var set = rules
         let url: URL
         switch kind { case "first": set[0] = first; url = URL(string: first.pattern)!; case "middle": set[middle] = first; url = URL(string: first.pattern)!; case "last": set[count - 1] = last; url = URL(string: "https://target.example/final/path?q=1#f")!; default: url = URL(string: "https://absent.example/no-match")! }
-        let settings = Settings(defaultProfile: "Default", rules: set); let router = URLRouter(); _ = router.profile(for: url, settings: settings)
+        let settings = Settings(rules: set); let router = URLRouter(); _ = router.profile(for: url, settings: settings)
         var samples: [Double] = []; samples.reserveCapacity(1_000)
         for _ in 0..<1_000 { let start = DispatchTime.now().uptimeNanoseconds; _ = router.profile(for: url, settings: settings); samples.append(Double(DispatchTime.now().uptimeNanoseconds - start) / 1_000.0) }
         print("rules \(count) \(kind): \(summary(samples))")

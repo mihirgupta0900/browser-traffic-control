@@ -8,9 +8,11 @@ public struct Rule: Codable, Identifiable, Equatable {
 }
 
 public struct Settings: Codable, Equatable {
-    public var defaultProfile = "Personal"
     public var rules: [Rule] = []
-    public init(defaultProfile: String = "Personal", rules: [Rule] = []) { self.defaultProfile = defaultProfile; self.rules = rules }
+    public init(rules: [Rule] = []) { self.rules = rules }
+    // Compatibility initializer for clients decoding/migrating older settings.
+    // The former default profile is intentionally ignored for unmatched URLs.
+    public init(defaultProfile: String, rules: [Rule] = []) { self.rules = rules }
 }
 
 public final class URLRouter {
@@ -21,10 +23,10 @@ public final class URLRouter {
         guard let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https", url.host != nil else { return false }
         return true
     }
-    public func profile(for url: URL, settings: Settings) -> String {
+    public func profile(for url: URL, settings: Settings) -> String? {
         if cachedSettings != settings { cachedSettings = settings; compiled = settings.rules.map { compile($0.pattern) } }
         for (index, rule) in settings.rules.enumerated() where compiled[index].firstMatch(in: url.absoluteString, range: NSRange(url.absoluteString.startIndex..., in: url.absoluteString)) != nil { return rule.profile }
-        return settings.defaultProfile
+        return nil
     }
     private func compile(_ pattern: String) -> NSRegularExpression { let escaped = NSRegularExpression.escapedPattern(for: pattern).replacingOccurrences(of: "\\*\\*", with: ".*").replacingOccurrences(of: "\\*", with: "[^/]*"); return (try? NSRegularExpression(pattern: "^" + escaped + "$", options: .caseInsensitive)) ?? (try! NSRegularExpression(pattern: "a^", options: [])) }
     public func wildcard(_ pattern: String, _ value: String) -> Bool {

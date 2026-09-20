@@ -7,8 +7,8 @@ It does not replace or render a browser. macOS sends external links to the defau
 ## Features
 
 - Ordered first-match-wins URL rules with `*` and `**` patterns.
-- Native Dia profile discovery and pickers.
-- Default profile fallback and unavailable-profile preservation.
+- Native Dia profile discovery and pickers for rule destinations.
+- Current-profile fallback for unmatched links; unavailable saved rule profiles remain visible.
 - HTTP/HTTPS default-browser validation and setup guidance.
 - URL preview, visible edit/reorder/delete actions, and background URL handling.
 - Safe AppleScript argument passing; URLs and profile names are never interpolated into script source.
@@ -31,7 +31,7 @@ The repository includes reproducible packaging, but signed releases require main
 1. Open Browser Traffic Control normally to edit settings.
 2. Click **Make Default Browser**, or choose it in System Settings → Desktop & Dock → Default web browser.
 3. Approve Automation access to Dia in System Settings → Privacy & Security → Automation.
-4. Refresh Dia profiles and choose a default destination.
+4. Refresh Dia profiles so rule destination pickers are populated.
 5. Add ordered rules. The first matching rule wins.
 
 Keep one installed copy of the app, preferably `/Applications/Browser Traffic Control.app`. macOS LaunchServices can retain stale registrations for copies launched from a build or `dist` folder. If another app opens a link unexpectedly, quit or remove duplicate local copies, launch the `/Applications` copy, then use **Check Again** and confirm both HTTP and HTTPS show as configured.
@@ -46,7 +46,7 @@ https://*.atlassian.net/** → Dia / Work
 https://mail.google.com/** → Dia / Personal
 ```
 
-Use **Preview match** to inspect a rule decision without opening a tab.
+Use **Preview match** to inspect a rule decision without opening a tab. A matched URL shows its named Dia profile; an unmatched URL shows **Current Dia profile**, which means the tab is created in whichever profile is active in Dia at that moment.
 
 ## Troubleshooting
 
