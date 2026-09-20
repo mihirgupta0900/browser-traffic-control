@@ -6,3 +6,4 @@ DerivedData/
 *.sha256
 .DS_Store
 dist/
+Browser Traffic Control.app/
