@@ -41,6 +41,11 @@ struct RoutingTests {
         let migrated = try JSONDecoder().decode(Settings.self, from: legacy)
         precondition(router.profile(for: URL(string: "https://news.example.org")!, settings: migrated) == nil)
     }
+
+    func staleHandlerRegistrationIsNotConfigured() {
+        precondition(HandlerStateLogic.classify(http: true, https: true, eligible: false) == .staleRegistration)
+        precondition(HandlerStateLogic.explanation(for: .staleRegistration).contains("eligible web browser"))
+    }
 }
 
 // The local Swift toolchain does not ship XCTest/Testing modules. Execute the
@@ -53,5 +58,6 @@ let _browserTrafficControlValidation: Void = {
     t.unmatchedUsesCurrentProfileFallback()
     t.httpAndHttpsValidation()
     try! t.settingsEncodeDecodeRoundTrip()
-    print("BrowserTrafficControlTests: 5 tests passed")
+    t.staleHandlerRegistrationIsNotConfigured()
+    print("BrowserTrafficControlTests: 6 tests passed")
 }()
