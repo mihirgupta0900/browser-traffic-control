@@ -13,14 +13,40 @@
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
 			<key>CFBundleURLName</key>
 			<string>Web URLs</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>http</string>
 				<string>https</string>
 			</array>
 		</dict>
+	</array>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>HTML document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Default</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.html</string>
+				<string>public.xhtml</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>NSUserActivityTypeBrowsingWeb</string>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>0.1.0</string>

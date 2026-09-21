@@ -16,9 +16,39 @@ final class AppModel: ObservableObject {
     let store = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("BrowserTrafficControl/settings.json")
     let router = URLRouter()
     init() { load(); refreshDefaultHandler() }
-    func handlerMatches(_ scheme: String) -> Bool? { guard let unmanaged = LSCopyDefaultApplicationURLForURL(URL(string: "\(scheme)://example.com")! as CFURL, .all, nil) else { return nil }; return (unmanaged.takeRetainedValue() as URL).path == Bundle.main.bundlePath }
-    func refreshDefaultHandler() { let http = handlerMatches("http"); let https = handlerMatches("https"); handlerState = HandlerStateLogic.classify(http: http, https: https); isDefaultHandler = handlerState == .configured; handlerStatus = HandlerStateLogic.explanation(for: handlerState) }
-    func makeDefaultHandler() { LSSetDefaultHandlerForURLScheme("http" as CFString, Bundle.main.bundleIdentifier! as CFString); LSSetDefaultHandlerForURLScheme("https" as CFString, Bundle.main.bundleIdentifier! as CFString); refreshDefaultHandler(); notice = isDefaultHandler ? "Now the default web handler" : "macOS may require confirmation in System Settings" }
+    func handlerMatches(_ scheme: String) -> Bool? {
+        guard let url = URL(string: "\(scheme)://example.com"), let resolved = NSWorkspace.shared.urlForApplication(toOpen: url) else { return nil }
+        return resolved.standardizedFileURL.path == Bundle.main.bundleURL.standardizedFileURL.path
+    }
+    func browserEligibility() -> Bool {
+        let info = Bundle.main.infoDictionary ?? [:]
+        let schemes = ((info["CFBundleURLTypes"] as? [[String: Any]]) ?? []).flatMap { $0["CFBundleURLSchemes"] as? [String] ?? [] }
+        let contentTypes = ((info["CFBundleDocumentTypes"] as? [[String: Any]]) ?? []).flatMap { $0["LSItemContentTypes"] as? [String] ?? [] }
+        return schemes.contains("http") && schemes.contains("https") && contentTypes.contains("public.html")
+    }
+    func refreshDefaultHandler() {
+        let http = handlerMatches("http"); let https = handlerMatches("https")
+        handlerState = HandlerStateLogic.classify(http: http, https: https, eligible: browserEligibility())
+        isDefaultHandler = handlerState == .configured
+        handlerStatus = HandlerStateLogic.explanation(for: handlerState)
+    }
+    func makeDefaultHandler() {
+        let appURL = Bundle.main.bundleURL
+        let group = DispatchGroup()
+        var errors: [Error] = []
+        let errorLock = NSLock()
+        for scheme in ["http", "https"] {
+            group.enter()
+            NSWorkspace.shared.setDefaultApplication(at: appURL, toOpenURLsWithScheme: scheme) { error in
+                if let error { errorLock.lock(); errors.append(error); errorLock.unlock() }
+                group.leave()
+            }
+        }
+        group.notify(queue: .main) {
+            self.refreshDefaultHandler()
+            self.notice = errors.isEmpty ? "Default-browser assignment requested; verify it in System Settings" : "macOS did not accept the default-browser assignment"
+        }
+    }
     func availableProfiles(for current: String? = nil) -> [String] { var result = profiles; if let current, !current.isEmpty, !result.contains(current) { result.insert(current, at: 0) }; return result }
     func refreshProfiles() { profilesLoading = true; profileStatus = "Refreshing Dia profiles…"; DispatchQueue.global().async { let source = """
         tell application id "company.thebrowser.dia"

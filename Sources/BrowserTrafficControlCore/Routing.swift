@@ -45,16 +45,26 @@ public enum ProfileList {
     }
 }
 
-public enum HandlerState: Equatable { case configured, partial, notConfigured, unavailable }
+public enum HandlerState: Equatable { case configured, partial, notConfigured, unavailable, staleRegistration }
 public enum HandlerStateLogic {
     public static func classify(http: Bool?, https: Bool?) -> HandlerState {
+        classify(http: http, https: https, eligible: true)
+    }
+    public static func classify(http: Bool?, https: Bool?, eligible: Bool) -> HandlerState {
         guard let http, let https else { return .unavailable }
+        if !eligible && (http || https) { return .staleRegistration }
         if http && https { return .configured }
         if http || https { return .partial }
         return .notConfigured
     }
     public static func explanation(for state: HandlerState) -> String {
-        switch state { case .configured: return "External links reach Browser Traffic Control first, then route to Dia."; case .partial: return "Browser Traffic Control handles only one link type. Set both HTTP and HTTPS for complete routing."; case .notConfigured: return "macOS sends external links to the default browser first. Set Browser Traffic Control as default so it can apply your rules, then forward links to Dia."; case .unavailable: return "macOS could not verify the current default-browser assignment." }
+        switch state {
+        case .configured: return "HTTP and HTTPS are registered with Browser Traffic Control. External links reach it first, then route to Dia."
+        case .partial: return "Browser Traffic Control handles only one link type. Set both HTTP and HTTPS for complete routing."
+        case .notConfigured: return "macOS sends external links to the default browser first. Choose Browser Traffic Control in System Settings so it can apply your rules, then forward links to Dia."
+        case .unavailable: return "macOS could not verify the current default-browser assignment. Use Check Again or inspect System Settings."
+        case .staleRegistration: return "macOS has a stale handler record, but this app is not registered as an eligible web browser. Reinstall the app and choose it in System Settings."
+        }
     }
 }
 

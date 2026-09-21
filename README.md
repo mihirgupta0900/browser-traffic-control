@@ -29,7 +29,7 @@ The repository includes reproducible packaging, but signed releases require main
 ## First run
 
 1. Open Browser Traffic Control normally to edit settings.
-2. Click **Make Default Browser**, or choose it in System Settings → Desktop & Dock → Default web browser.
+2. Click **Make Default Browser**, or choose it in System Settings → Desktop & Dock → Default web browser. The app advertises HTTP/HTTPS and HTML document support so it can appear in that browser chooser; if an older copy is still registered, reinstall the `/Applications` copy and click **Check Again**.
 3. Approve Automation access to Dia in System Settings → Privacy & Security → Automation.
 4. Refresh Dia profiles so rule destination pickers are populated.
 5. Add ordered rules. The first matching rule wins.
@@ -53,6 +53,7 @@ Use **Preview match** to inspect a rule decision without opening a tab. A matche
 - **Profiles not loaded:** Click **Refresh**. Dia must be running with at least one window, and macOS Automation permission must allow Browser Traffic Control to control Dia.
 - **A link did not route:** Check the default-browser status, confirm the profile still exists, and use **Preview match** to inspect the selected destination.
 - **A CLI says it opened the default browser but Safari appears:** Verify that Browser Traffic Control is installed in `/Applications` and that there is not an older source/build copy registered under the same bundle ID. Re-open the installed copy, click **Check Again**, and test with a harmless link. Some tools may explicitly select Safari or another browser instead of using macOS LaunchServices; Browser Traffic Control cannot intercept those explicit launches.
+- **The app says HTTP/HTTPS are registered but System Settings shows Safari:** This indicates a stale LaunchServices record or an older ineligible app bundle. Use the current `/Applications` build, refresh LaunchServices by relaunching it, and select Browser Traffic Control in System Settings. The app will report a stale registration when its browser eligibility declarations are missing.
 - **macOS blocks the app:** Unsigned local builds may require opening the app from Finder and approving the macOS warning. Public releases should be signed and notarized by the maintainer before broad distribution.
 
 ## Privacy and security
